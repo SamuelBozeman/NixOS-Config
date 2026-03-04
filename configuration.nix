@@ -100,6 +100,15 @@
   # DESKTOP ENVIRONMENT
   # ============================================================================
 
+  services.dbus.enable = true;
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ 
+      pkgs.xdg-desktop-portal-gtk 
+      pkgs.xdg-desktop-portal-hyprland
+    ];
+  };
+
   programs.hyprland.enable = true;
 
   environment.sessionVariables = {
@@ -169,6 +178,7 @@
     # --- File Management & Utilities ---
     nautilus
     trash-cli
+    xdg-utils
     wget
     curl
     imagemagick
