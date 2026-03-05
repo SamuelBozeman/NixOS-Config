@@ -194,11 +194,12 @@
     imagemagick
 
     # --- Media & System Utilities ---
+    spotify
     wireplumber
     bluez
     bluez-tools
     upower
-    brightnessctl # New package
+    brightnessctl
 
     # --- Gaming ---
     protonplus
