@@ -16,6 +16,10 @@
   # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.plymouth.enable = true;
+  boot.consoleLogLevel = 0;
+  boot.initrd.verbose = false;
+  boot.kernelParams = [ "quiet" "splash" "boot.shell_on_fail" "loglevel=3" "rd.systemd.show_status=false" "rd.udev.log_level=3" "udev.log_priority=3" ];
 
   # Kernel
   boot.kernelPackages = pkgs.linuxPackages_6_18;
@@ -173,17 +177,11 @@
     matugen
     inotify-tools
     app2unit
-    (github-desktop.overrideAttrs (oldAttrs: {
-      nativeBuildInputs = (oldAttrs.nativeBuildInputs or []) ++ [ makeWrapper ];
-      postFixup = (oldAttrs.postFixup or "") + ''
-        wrapProgram $out/bin/github-desktop \
-          --add-flags "--enable-features=UseOzonePlatform --ozone-platform=wayland"
-      '';
-    }))
 
     # --- Internet & Communication ---
     firefox
     vesktop
+    obsidian
 
     # --- File Management & Utilities ---
     nautilus
