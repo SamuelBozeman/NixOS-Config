@@ -54,6 +54,18 @@
     };
   };
 
+  programs.ssh = {
+    enable = true;
+    matchBlocks = {
+      "river-server" = {
+        hostname = "10.99.186.147";
+        user = "meterra";
+        port = 1215;
+        identityFile = "~/.ssh/id_ed25519";
+      };
+    };
+  };
+
   programs.fastfetch = {
     enable = true;
     settings = {

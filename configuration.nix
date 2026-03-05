@@ -59,6 +59,13 @@
 
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
+  services.zerotierone.enable = true;
+  services.mullvad-vpn.enable = true;
+
+  # Trust ZeroTier interfaces so traffic inside the VPN isn't blocked
+  # (The UDP port 9993 for the tunnel itself is opened automatically)
+  networking.firewall.trustedInterfaces = [ "zt*" ];
+  networking.firewall.checkReversePath = "loose";
 
   time.timeZone = "America/Chicago";
 
@@ -145,6 +152,9 @@
   # SYSTEM PACKAGES
   # ============================================================================
 
+  # flatpak
+  services.flatpak.enable = true;
+  
   environment.systemPackages = with pkgs; [
     distrobox
     # --- Desktop / Window Manager ---
@@ -168,6 +178,7 @@
     btop
     jq
     socat
+    yt-dlp
 
     # --- Development ---
     git
@@ -182,6 +193,7 @@
     firefox
     vesktop
     obsidian
+    mullvad-vpn
 
     # --- File Management & Utilities ---
     nautilus
@@ -190,6 +202,7 @@
     wget
     curl
     imagemagick
+    ffmpeg
 
     # --- Media & System Utilities ---
     spotify
@@ -198,6 +211,7 @@
     bluez-tools
     upower
     brightnessctl
+    jellyfin-desktop
 
     # --- Gaming ---
     protonplus
