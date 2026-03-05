@@ -119,6 +119,16 @@
   };
 
   # ============================================================================
+  # GAMING
+  # ============================================================================
+
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
+  };
+
+  # ============================================================================
   # VIRTUALIZATION
   # ============================================================================
 
@@ -189,6 +199,9 @@
     bluez-tools
     upower
     brightnessctl # New package
+
+    # --- Gaming ---
+    protonplus
 
     # --- Theming & Fonts ---
     adw-gtk3
