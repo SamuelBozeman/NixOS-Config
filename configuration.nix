@@ -195,6 +195,16 @@
     exiftool
     hashcat
     cudaPackages.cudatoolkit
+    nmap
+    wireshark
+    burpsuite
+    metasploit
+    john
+    sqlmap
+    thc-hydra
+    aircrack-ng
+    binwalk
+    gobuster
 
     # --- Internet & Communication ---
     firefox
@@ -211,6 +221,7 @@
     imagemagick
     ffmpeg
     flac
+    lmstudio
 
     # --- Media & System Utilities ---
     spotify
