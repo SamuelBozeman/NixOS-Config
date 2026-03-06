@@ -188,6 +188,11 @@
     matugen
     inotify-tools
     app2unit
+    python3
+
+    # --- Cybersecurity ---
+    ghidra-bin
+    exiftool
 
     # --- Internet & Communication ---
     firefox
@@ -203,6 +208,7 @@
     curl
     imagemagick
     ffmpeg
+    flac
 
     # --- Media & System Utilities ---
     spotify
