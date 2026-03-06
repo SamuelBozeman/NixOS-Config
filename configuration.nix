@@ -193,6 +193,8 @@
     # --- Cybersecurity ---
     ghidra-bin
     exiftool
+    hashcat
+    cudaPackages.cudatoolkit
 
     # --- Internet & Communication ---
     firefox
