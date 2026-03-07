@@ -103,6 +103,7 @@
 
   # PAM Configuration for Caelestia Shell
   security.pam.services.caelestia-shell = {};
+  security.polkit.enable = true;
 
   # Shell Configuration
   programs.fish.enable = true;
@@ -119,6 +120,7 @@
   services.gvfs.enable = true;
   services.udisks2.enable = true;
   services.dbus.enable = true;
+  programs.dconf.enable = true;
   xdg.portal = {
     enable = true;
     extraPortals = [ 
@@ -129,6 +131,11 @@
 
   programs.hyprland.enable = true;
   services.hypridle.enable = true;
+
+  programs.java = {
+    enable = true;
+    package = pkgs.jdk21;
+  };
 
   # Sound
   security.rtkit.enable = true;
@@ -187,6 +194,7 @@
     # --- Desktop / Window Manager ---
     hyprpicker
     hypridle
+    hyprpolkitagent
     xdg-desktop-portal-hyprland
     xdg-desktop-portal-gtk
     wl-clipboard
@@ -218,6 +226,7 @@
     git
     vscodium
     jetbrains.idea-oss
+    jdk21
     gemini-cli-bin
     matugen
     inotify-tools

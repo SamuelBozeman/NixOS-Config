@@ -19,6 +19,7 @@
 
       # AUTOSTART
       "exec-once" = [
+        "systemctl --user start hyprpolkitagent"
         "caelestia shell"
       ];
 
@@ -122,7 +123,8 @@
       # Per-device config
       device = [
         {
-          name = "epic-mouse-v1";
+          name = "pulsar-4k-dongle";
+          natural_scroll = false;
           sensitivity = -0.5;
         }
       ];
