@@ -52,6 +52,8 @@
   services.supergfxd.enable = true;
   services.asusd.enable = true;
   services.upower.enable = true;
+  services.power-profiles-daemon.enable = true;
+  hardware.i2c.enable = true; # Required for ddcutil
 
   # ============================================================================
   # NETWORKING & LOCALIZATION
@@ -99,6 +101,9 @@
     packages = with pkgs; [];
   };
 
+  # PAM Configuration for Caelestia Shell
+  security.pam.services.caelestia-shell = {};
+
   # Shell Configuration
   programs.fish.enable = true;
   users.defaultUserShell = pkgs.fish;
@@ -111,6 +116,8 @@
   # DESKTOP ENVIRONMENT
   # ============================================================================
 
+  services.gvfs.enable = true;
+  services.udisks2.enable = true;
   services.dbus.enable = true;
   xdg.portal = {
     enable = true;
@@ -121,6 +128,16 @@
   };
 
   programs.hyprland.enable = true;
+  services.hypridle.enable = true;
+
+  # Sound
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+  };
 
   environment.sessionVariables = {
     CAELESTIA_WALLPAPERS_DIR = "/home/meterra/Pictures/Wallpapers";
@@ -149,6 +166,16 @@
   };
 
   # ============================================================================
+  # FONTS
+  # ============================================================================
+
+  fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.caskaydia-cove
+    material-symbols
+  ];
+
+  # ============================================================================
   # SYSTEM PACKAGES
   # ============================================================================
 
@@ -168,6 +195,10 @@
     nwg-look
     grim
     slurp
+    quickshell
+    inputs.caelestia-cli.packages.${pkgs.system}.default
+    qt6.qtbase
+    qt6.qtdeclarative
 
     # --- Terminal & Shell ---
     kitty
@@ -179,6 +210,9 @@
     jq
     socat
     yt-dlp
+    cmake
+    ninja
+    pkg-config
 
     # --- Development ---
     git
@@ -189,6 +223,7 @@
     inotify-tools
     app2unit
     python3
+    swappy
 
     # --- Cybersecurity ---
     ghidra-bin
@@ -217,20 +252,31 @@
     trash-cli
     xdg-utils
     wget
+    udisks
+    ntfs3g
+    dosfstools
     curl
     imagemagick
     ffmpeg
     flac
     lmstudio
+    libqalculate
 
     # --- Media & System Utilities ---
     spotify
-    wireplumber
     bluez
     bluez-tools
-    upower
     brightnessctl
+    ddcutil
+    pipewire
+    lm_sensors
+    cava
+    aubio
     jellyfin-desktop
+    sshfs
+    qbittorrent
+    spotdl
+    spotify
 
     # --- Gaming ---
     protonplus
@@ -240,8 +286,8 @@
     papirus-icon-theme
     kdePackages.qt6ct
     libsForQt5.qt5ct
-    nerd-fonts.jetbrains-mono
     inputs.rose-pine-hyprcursor.packages.${pkgs.system}.default
   ];
+
 
 }
