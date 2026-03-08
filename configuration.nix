@@ -55,6 +55,11 @@
   services.power-profiles-daemon.enable = true;
   hardware.i2c.enable = true; # Required for ddcutil
 
+  # Bluetooth
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
+  services.blueman.enable = true;
+
   # ============================================================================
   # NETWORKING & LOCALIZATION
   # ============================================================================
@@ -97,7 +102,7 @@
   users.users.meterra = {
     isNormalUser = true;
     description = "meterra";
-    extraGroups = [ "networkmanager" "wheel" "video" ]; # Added video for brightnessctl
+    extraGroups = [ "networkmanager" "wheel" "video" "i2c" ]; # Added video for brightnessctl, i2c for ddcutil
     packages = with pkgs; [];
   };
 
@@ -110,7 +115,7 @@
   users.defaultUserShell = pkgs.fish;
   
   programs.fish.shellAliases = {
-    rebuild = "sudo nixos-rebuild switch --flake /etc/nixos";
+    rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config";
   };
 
   # ============================================================================
@@ -186,6 +191,9 @@
   # SYSTEM PACKAGES
   # ============================================================================
 
+  # kde connect
+  programs.kdeconnect.enable = true;
+  
   # flatpak
   services.flatpak.enable = true;
   
@@ -204,9 +212,12 @@
     grim
     slurp
     quickshell
-    inputs.caelestia-cli.packages.${pkgs.system}.default
     qt6.qtbase
     qt6.qtdeclarative
+    wireplumber
+    libpulseaudio
+    gobject-introspection
+    upower
 
     # --- Terminal & Shell ---
     kitty
@@ -272,6 +283,8 @@
     libqalculate
 
     # --- Media & System Utilities ---
+    vlc
+    kdePackages.gwenview
     spotify
     bluez
     bluez-tools
@@ -295,7 +308,7 @@
     papirus-icon-theme
     kdePackages.qt6ct
     libsForQt5.qt5ct
-    inputs.rose-pine-hyprcursor.packages.${pkgs.system}.default
+    inputs.rose-pine-hyprcursor.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
 

@@ -11,9 +11,6 @@
   # State version for Home Manager
   home.stateVersion = "25.11";
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
   # ----------------------------------------------------------------------------
   # PROGRAMS
   # ----------------------------------------------------------------------------
@@ -60,6 +57,7 @@
 
   programs.ssh = {
     enable = true;
+    enableDefaultConfig = false;
     matchBlocks = {
       "river-server" = {
         hostname = "10.99.186.147";
@@ -263,7 +261,7 @@
         specialWorkspaceIcons = [];
       };
       tray = { background = false; recolour = false; compact = false; iconSubs = []; };
-      status = { showAudio = false; showMicrophone = false; showKbLayout = false; showNetwork = true; showWifi = true; showBluetooth = true; showBattery = true; showLockStatus = true; };
+      status = { showAudio = true; showMicrophone = true; showKbLayout = false; showNetwork = true; showWifi = true; showBluetooth = true; showBattery = true; showLockStatus = true; };
       clock.showIcon = true;
       sizes = { innerWidth = 40; windowPreviewSize = 400; trayMenuWidth = 300; batteryWidth = 250; networkWidth = 320; };
       entries = [
