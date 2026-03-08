@@ -40,10 +40,10 @@
             home-manager.users.meterra = import ./home.nix;
             home-manager.extraSpecialArgs = { inherit inputs; };
           }
-          ({ pkgs, ... }: {
+          (let system = "x86_64-linux"; in { pkgs, ... }: {
             environment.systemPackages = [
-              inputs.caelestia-cli.packages.x86_64-linux.with-shell
-              inputs.zen-browser.packages.x86_64-linux.default
+              inputs.caelestia-cli.packages.${system}.with-shell
+              inputs.zen-browser.packages.${system}.default
             ];
           })
         ];
