@@ -341,6 +341,7 @@
     spotify
 
     # --- Gaming ---
+    eden
     protonplus
     mangohud
     lutris
