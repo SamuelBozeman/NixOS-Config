@@ -201,6 +201,22 @@
   # XDG CONFIG FILES (Direct migration)
   # ----------------------------------------------------------------------------
 
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "x-scheme-handler/http" = [ "zen-beta.desktop" ];
+      "x-scheme-handler/https" = [ "zen-beta.desktop" ];
+      "application/pdf" = [ "zen-beta.desktop" ];
+      "application/msword" = [ "writer.desktop" ];
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = [ "writer.desktop" ];
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.template" = [ "writer.desktop" ];
+      "application/vnd.ms-word.document.macroEnabled.12" = [ "writer.desktop" ];
+      "application/vnd.ms-word.template.macroEnabled.12" = [ "writer.desktop" ];
+      "application/vnd.oasis.opendocument.text" = [ "writer.desktop" ];
+      "application/vnd.oasis.opendocument.text-template" = [ "writer.desktop" ];
+    };
+  };
+
   xdg.configFile."caelestia/shell.json".text = builtins.toJSON {
     appearance = {
       rounding.scale = 0.7511773871119474;
