@@ -21,6 +21,7 @@
       "exec-once" = [
         "systemctl --user start hyprpolkitagent"
         "caelestia shell"
+        "kdeconnect-indicator"
       ];
 
       # ENVIRONMENT VARIABLES
@@ -28,6 +29,11 @@
         "XCURSOR_SIZE,16"
         "HYPRCURSOR_SIZE,16"
         "HYPRCURSOR_THEME,rose-pine-hyprcursor"
+        "AQ_DRM_DEVICES,/dev/dri/nvidia-gpu:/dev/dri/amd-igpu"
+        "LIBVA_DRIVER_NAME,nvidia"
+        "XDG_SESSION_TYPE,wayland"
+        "GBM_BACKEND,nvidia-drm"
+        "__GLX_VENDOR_LIBRARY_NAME,nvidia"
       ];
 
       # LOOK AND FEEL
@@ -40,6 +46,10 @@
         resize_on_border = false;
         allow_tearing = false;
         layout = "dwindle";
+      };
+
+      cursor = {
+        no_hardware_cursors = true;
       };
 
       decoration = {

@@ -13,8 +13,21 @@
     ./hardware-configuration.nix
   ];
 
-  # Bootloader
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.limine = {
+    enable = true;
+    style.wallpapers = [ ];
+
+    extraConfig = ''
+      term_palette: 191724;eb6f92;9ccfd8;f6c177;31748f;c4a7e7;ebbcba;e0def4;26233a;eb6f92;9ccfd8;f6c177;31748f;c4a7e7;ebbcba;e0def4
+      term_background: 191724
+      term_foreground: e0def4
+      backdrop: 191724
+      
+      # Optional: Set this to 0 if you want the terminal text to stretch edge-to-edge
+      # term_margin: 0 
+    '';
+  };
+  boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.plymouth.enable = true;
   boot.consoleLogLevel = 0;
@@ -41,23 +54,33 @@
   
   hardware.nvidia = {
     modesetting.enable = true;
-    powerManagement.enable = false;
+    powerManagement.enable = true;
     powerManagement.finegrained = false;
     open = true;
     nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.latest;
+    package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
   # Asus & Power Management
+  services.logind.lidSwitch = "suspend";
   services.supergfxd.enable = true;
   services.asusd.enable = true;
+  services.udev.extraRules = ''
+    KERNEL=="card*", KERNELS=="0000:01:00.0", SUBSYSTEM=="drm", SUBSYSTEMS=="pci", SYMLINK+="dri/nvidia-gpu"
+    KERNEL=="card*", KERNELS=="0000:65:00.0", SUBSYSTEM=="drm", SUBSYSTEMS=="pci", SYMLINK+="dri/amd-igpu"
+  '';
   services.upower.enable = true;
   services.power-profiles-daemon.enable = true;
-  hardware.i2c.enable = true; # Required for ddcutil
+  hardware.i2c.enable = true;
 
   # Bluetooth
   hardware.bluetooth.enable = true;
   hardware.bluetooth.powerOnBoot = true;
+  hardware.bluetooth.settings = {
+    General = {
+      Experimental = true; # Often helps with modern BLE devices
+    };
+  };
   services.blueman.enable = true;
 
   # ============================================================================
@@ -66,13 +89,18 @@
 
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
+  networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
+  services.geoclue2.enable = true;
   services.zerotierone.enable = true;
   services.mullvad-vpn.enable = true;
 
   # Trust ZeroTier interfaces so traffic inside the VPN isn't blocked
-  # (The UDP port 9993 for the tunnel itself is opened automatically)
+  networking.firewall.enable = true;
   networking.firewall.trustedInterfaces = [ "zt*" ];
   networking.firewall.checkReversePath = "loose";
+  networking.firewall.allowedUDPPortRanges = [
+    { from = 50000; to = 65535; }
+  ];
 
   time.timeZone = "America/Chicago";
 
@@ -102,7 +130,7 @@
   users.users.meterra = {
     isNormalUser = true;
     description = "meterra";
-    extraGroups = [ "networkmanager" "wheel" "video" "i2c" ]; # Added video for brightnessctl, i2c for ddcutil
+    extraGroups = [ "networkmanager" "wheel" "video" "i2c" ];
     packages = with pkgs; [];
   };
 
@@ -132,6 +160,7 @@
       pkgs.xdg-desktop-portal-gtk 
       pkgs.xdg-desktop-portal-hyprland
     ];
+    config.common.default = "*";
   };
 
   programs.hyprland.enable = true;
@@ -153,9 +182,10 @@
 
   environment.sessionVariables = {
     CAELESTIA_WALLPAPERS_DIR = "/home/meterra/Pictures/Wallpapers";
-  };
-  environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    LIBVA_DRIVER_NAME = "nvidia";
   };
 
   # ============================================================================
@@ -166,6 +196,11 @@
     enable = true;
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;
+  };
+
+  programs.gamescope = {
+    enable = true;
+    capSysNice = true;
   };
 
   # ============================================================================
@@ -214,6 +249,8 @@
     quickshell
     qt6.qtbase
     qt6.qtdeclarative
+    kdePackages.qtwayland
+    libsForQt5.qtwayland
     wireplumber
     libpulseaudio
     gobject-introspection
@@ -226,6 +263,7 @@
     starship
     fastfetch
     btop
+    nvtopPackages.full
     jq
     socat
     yt-dlp
@@ -266,6 +304,7 @@
     vesktop
     obsidian
     mullvad-vpn
+    libreoffice-qt
 
     # --- File Management & Utilities ---
     nautilus
@@ -284,6 +323,7 @@
 
     # --- Media & System Utilities ---
     vlc
+    feishin
     kdePackages.gwenview
     spotify
     bluez
@@ -302,6 +342,9 @@
 
     # --- Gaming ---
     protonplus
+    mangohud
+    lutris
+    heroic
 
     # --- Theming & Fonts ---
     adw-gtk3

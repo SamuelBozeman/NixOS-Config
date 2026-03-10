@@ -34,6 +34,14 @@
     # Using default settings since you mentioned it's not configured yet
   };
 
+  programs.zoxide = {
+    enable = true;
+    enableFishIntegration = true;
+    options = [
+      "--cmd cd"
+    ];
+  };
+
   programs.kitty = {
     enable = true;
     # Add basic config or keep defaults
@@ -169,6 +177,23 @@
           type = "custom";
         }
       ];
+    };
+  };
+
+  programs.vesktop = {
+    enable = true;
+
+    vencord.settings = {
+      autoUpdate = true;
+      autoUpdateNotification = true;
+      notifyAboutUpdates = true;
+
+      plugins = {
+        ClearURLs.enabled = true;
+        FixYoutubeEmbeds.enabled = true;
+        FakeNitro.enabled = true;
+        LastFMRichPresence.enabled = true;
+      };
     };
   };
 
