@@ -35,11 +35,34 @@
   boot.kernelParams = [ "quiet" "splash" "boot.shell_on_fail" "loglevel=3" "rd.systemd.show_status=false" "rd.udev.log_level=3" "udev.log_priority=3" ];
 
   # Kernel
-  boot.kernelPackages = pkgs.linuxPackages_6_18;
+  boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
 
   # Nix Settings
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.substituters = [ "https://cache.nixos.org/" "https://attic.xuyh0120.win/lantian" ];
+  nix.settings.trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=" ];
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.overlays = [
+    inputs.nix-cachyos-kernel.overlays.pinned
+    (final: prev: {
+      app2unit = prev.app2unit.overrideAttrs (oldAttrs: {
+        version = "1.0.3";
+        src = prev.fetchFromGitHub {
+          owner = "Vladimir-csp";
+          repo = "app2unit";
+          rev = "v1.0.3";
+          hash = "sha256-7eEVjgs+8k+/NLteSBKgn4gPaPLHC+3Uzlmz6XB0930=";
+        };
+        postFixup = ''
+          substituteInPlace $out/bin/app2unit \
+            --replace-fail '#!/bin/sh' '#!${final.lib.getExe final.dash}'
+          substituteInPlace $out/bin/app2unit \
+            --replace-fail 'TERMINAL_HANDLER=xdg-terminal-exec' \
+                           'TERMINAL_HANDLER=${final.lib.getExe final.xdg-terminal-exec}'
+        '';
+      });
+    })
+  ];
 
   # State Version (DO NOT CHANGE)
   system.stateVersion = "25.11";
@@ -144,12 +167,21 @@
   
   programs.fish.shellAliases = {
     rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config";
+    update = "nix flake update --flake ~/nixos-config && sudo nixos-rebuild switch --flake ~/nixos-config";
   };
 
   # ============================================================================
   # DESKTOP ENVIRONMENT
   # ============================================================================
 
+  services.displayManager.sddm = {
+    enable = true;
+    wayland = {
+      enable = true;
+      # default compositor is "weston", you can optionally change it to kwin
+      #compositor = "kwin";
+    };
+  };
   services.gvfs.enable = true;
   services.udisks2.enable = true;
   services.dbus.enable = true;
@@ -298,6 +330,7 @@
     aircrack-ng
     binwalk
     gobuster
+    rockyou
 
     # --- Internet & Communication ---
     firefox

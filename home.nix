@@ -26,6 +26,7 @@
     '';
     shellAliases = {
       rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config";
+      update = "nix flake update --flake ~/nixos-config && sudo nixos-rebuild switch --flake ~/nixos-config";
     };
   };
 

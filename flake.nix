@@ -23,9 +23,10 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
   };
 
-  outputs = { self, nixpkgs, caelestia-shell, caelestia-cli, zen-browser, home-manager, ... }@inputs: {
+  outputs = { self, nixpkgs, caelestia-shell, caelestia-cli, zen-browser, home-manager, nix-cachyos-kernel, ... }@inputs: {
     nixosConfigurations = {
       nixos = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
@@ -42,7 +43,17 @@
           }
           (let system = "x86_64-linux"; in { pkgs, ... }: {
             environment.systemPackages = [
-              inputs.caelestia-cli.packages.${system}.with-shell
+              ((inputs.caelestia-cli.packages.${system}.with-shell.override {
+                inherit (pkgs) app2unit;
+                caelestia-shell = inputs.caelestia-shell.packages.${system}.default.override {
+                  inherit (pkgs) app2unit;
+                };
+              }).overrideAttrs (old: {
+                patchPhase = ''
+                  mkdir -p src/caelestia/data/templates
+                  echo "Darkly" > src/caelestia/data/templates/qtct.conf
+                '' + old.patchPhase;
+              }))
               inputs.zen-browser.packages.${system}.default
             ];
           })
