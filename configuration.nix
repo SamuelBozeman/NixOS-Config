@@ -73,7 +73,8 @@
 
   # Graphics / NVIDIA
   hardware.graphics.enable = true;
-  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.graphics.enable32Bit = true;
+  services.xserver.videoDrivers = [ "nvidia" "amdgpu" ];
   
   hardware.nvidia = {
     modesetting.enable = true;
@@ -85,7 +86,7 @@
   };
 
   # Asus & Power Management
-  services.logind.lidSwitch = "suspend";
+  services.logind.settings.Login.HandleLidSwitch = "suspend";
   services.supergfxd.enable = true;
   services.asusd.enable = true;
   services.udev.extraRules = ''
@@ -164,11 +165,6 @@
   # Shell Configuration
   programs.fish.enable = true;
   users.defaultUserShell = pkgs.fish;
-  
-  programs.fish.shellAliases = {
-    rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config";
-    update = "nix flake update --flake ~/nixos-config && sudo nixos-rebuild switch --flake ~/nixos-config";
-  };
 
   # ============================================================================
   # DESKTOP ENVIRONMENT
@@ -176,31 +172,20 @@
 
   services.displayManager.sddm = {
     enable = true;
-    wayland = {
-      enable = true;
-      # default compositor is "weston", you can optionally change it to kwin
-      #compositor = "kwin";
-    };
+    wayland.enable = true;
   };
+
   services.gvfs.enable = true;
   services.udisks2.enable = true;
   services.dbus.enable = true;
   programs.dconf.enable = true;
+
   xdg.portal = {
     enable = true;
     extraPortals = [ 
       pkgs.xdg-desktop-portal-gtk 
-      pkgs.xdg-desktop-portal-hyprland
     ];
     config.common.default = "*";
-  };
-
-  programs.hyprland.enable = true;
-  services.hypridle.enable = true;
-
-  programs.java = {
-    enable = true;
-    package = pkgs.jdk21;
   };
 
   # Sound
@@ -215,9 +200,44 @@
   environment.sessionVariables = {
     CAELESTIA_WALLPAPERS_DIR = "/home/meterra/Pictures/Wallpapers";
     NIXOS_OZONE_WL = "1";
-    GBM_BACKEND = "nvidia-drm";
-    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    LIBVA_DRIVER_NAME = "nvidia";
+  };
+
+  # ============================================================================
+  # SPECIALISATIONS
+  # ============================================================================
+
+  specialisation = {
+    Hyprland.configuration = {
+      system.nixos.tags = [ "Hyprland" ];
+      programs.hyprland = {
+        enable = true;
+        package = inputs.hyprland.packages.x86_64-linux.hyprland;
+        portalPackage = inputs.hyprland.packages.x86_64-linux.xdg-desktop-portal-hyprland;
+      };
+      programs.gamescope.enable = true;
+      programs.gamescope.capSysNice = true;
+      services.hypridle.enable = true;
+      environment.systemPackages = [
+        pkgs.hyprpolkitagent
+      ];
+    };
+
+    KDE.configuration = {
+      system.nixos.tags = [ "KDE" ];
+      services.xserver.enable = true;
+      services.desktopManager.plasma6.enable = true;
+      services.displayManager.defaultSession = "plasma";
+      programs.gamescope.enable = true;
+      programs.gamescope.capSysNice = true;
+      
+      # PRIME settings for hybrid graphics
+      hardware.nvidia.prime = {
+        offload.enable = pkgs.lib.mkForce true;
+        offload.enableOffloadCmd = pkgs.lib.mkForce true;
+        amdgpuBusId = "PCI:101:0:0"; # 0x65 is 101
+        nvidiaBusId = "PCI:1:0:0";
+      };
+    };
   };
 
   # ============================================================================
@@ -228,11 +248,6 @@
     enable = true;
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;
-  };
-
-  programs.gamescope = {
-    enable = true;
-    capSysNice = true;
   };
 
   # ============================================================================
@@ -266,126 +281,16 @@
   
   environment.systemPackages = with pkgs; [
     distrobox
-    # --- Desktop / Window Manager ---
-    hyprpicker
-    hypridle
-    hyprpolkitagent
-    xdg-desktop-portal-hyprland
     xdg-desktop-portal-gtk
-    wl-clipboard
-    cliphist
-    nwg-displays
-    nwg-look
-    grim
-    slurp
-    quickshell
     qt6.qtbase
     qt6.qtdeclarative
     kdePackages.qtwayland
     libsForQt5.qtwayland
     wireplumber
-    libpulseaudio
     gobject-introspection
     upower
-
-    # --- Terminal & Shell ---
-    kitty
-    foot
-    fish
-    starship
-    fastfetch
-    btop
-    nvtopPackages.full
-    jq
-    socat
-    yt-dlp
-    cmake
-    ninja
-    pkg-config
-
-    # --- Development ---
-    git
-    vscodium
-    jetbrains.idea-oss
-    jdk21
-    gemini-cli-bin
-    matugen
-    inotify-tools
-    app2unit
-    python3
-    swappy
-
-    # --- Cybersecurity ---
-    ghidra-bin
-    exiftool
-    hashcat
-    cudaPackages.cudatoolkit
-    nmap
-    wireshark
-    burpsuite
-    metasploit
-    john
-    sqlmap
-    thc-hydra
-    aircrack-ng
-    binwalk
-    gobuster
-    rockyou
-
-    # --- Internet & Communication ---
-    firefox
-    vesktop
-    obsidian
-    mullvad-vpn
-    libreoffice-qt
-
-    # --- File Management & Utilities ---
-    nautilus
-    trash-cli
-    xdg-utils
-    wget
     udisks
-    ntfs3g
-    dosfstools
-    curl
-    imagemagick
-    ffmpeg
-    flac
-    lmstudio
-    libqalculate
-
-    # --- Media & System Utilities ---
-    vlc
-    feishin
-    kdePackages.gwenview
-    spotify
-    bluez
-    bluez-tools
-    brightnessctl
-    ddcutil
     pipewire
-    lm_sensors
-    cava
-    aubio
-    jellyfin-desktop
-    sshfs
-    qbittorrent
-    spotdl
-    spotify
-
-    # --- Gaming ---
-    eden
-    protonplus
-    mangohud
-    lutris
-    heroic
-
-    # --- Theming & Fonts ---
-    adw-gtk3
-    papirus-icon-theme
-    kdePackages.qt6ct
-    libsForQt5.qt5ct
-    inputs.rose-pine-hyprcursor.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
 

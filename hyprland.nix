@@ -1,8 +1,12 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   wayland.windowManager.hyprland = {
     enable = true;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    plugins = [
+      inputs.hyprland-plugins.packages.${pkgs.stdenv.hostPlatform.system}.hyprexpo
+    ];
     
     settings = {
       # MONITORS & WORKSPACES
@@ -15,13 +19,15 @@
 
       # PROGRAMS
       "$terminal" = "kitty";
-      "$fileManager" = "nautilus";
+      "$fileManager" = "thunar";
+      "$browser" = "zen-beta";
 
       # AUTOSTART
       "exec-once" = [
         "systemctl --user start hyprpolkitagent"
         "caelestia shell"
         "kdeconnect-indicator"
+        "vesktop"
       ];
 
       # ENVIRONMENT VARIABLES
@@ -29,11 +35,11 @@
         "XCURSOR_SIZE,16"
         "HYPRCURSOR_SIZE,16"
         "HYPRCURSOR_THEME,rose-pine-hyprcursor"
-        "AQ_DRM_DEVICES,/dev/dri/nvidia-gpu:/dev/dri/amd-igpu"
-        "LIBVA_DRIVER_NAME,nvidia"
+        # "AQ_DRM_DEVICES,/dev/dri/nvidia-gpu:/dev/dri/amd-igpu"
+        # "LIBVA_DRIVER_NAME,nvidia"
         "XDG_SESSION_TYPE,wayland"
-        "GBM_BACKEND,nvidia-drm"
-        "__GLX_VENDOR_LIBRARY_NAME,nvidia"
+        # "GBM_BACKEND,nvidia-drm"
+        # "__GLX_VENDOR_LIBRARY_NAME,nvidia"
       ];
 
       # LOOK AND FEEL
@@ -144,11 +150,26 @@
         force_zero_scaling = true;
       };
 
+      # PLUGIN CONFIG
+      plugin = {
+        hyprexpo = {
+          columns = 3;
+          gap_size = 5;
+          bg_col = "rgba(111111ff)";
+          workspace_method = "center current";
+        };
+      };
+
+      # WINDOW RULES
+      windowrulev2 = [
+        "workspace special:vesktop, class:^(vesktop)$"
+      ];
+
       # KEYBINDINGS
       "$mainMod" = "SUPER";
       bind = [
         "$mainMod, Q, exec, $terminal"
-        "$mainMod, B, exec, zen-beta"
+        "$mainMod, B, exec, $browser"
         "$mainMod, C, killactive,"
         "$mainMod, M, exit,"
         "$mainMod, E, exec, $fileManager"
@@ -157,6 +178,8 @@
         "$mainMod, R, exec, caelestia shell drawers toggle launcher"
         "$mainMod, P, pseudo,"
         "$mainMod, J, togglesplit,"
+        "$mainMod, SPACE, hyprexpo:expo, toggle"
+        "$mainMod, V, togglespecialworkspace, vesktop"
         "$mainMod, left, movefocus, l"
         "$mainMod, right, movefocus, r"
         "$mainMod, up, movefocus, u"

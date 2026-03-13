@@ -12,7 +12,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
-    hyprland.url = "github:hyprwm/hyprland?ref=v0.36.0";
+    hyprland.url = "github:hyprwm/hyprland?rev=386376400119dd46a767c9f8c8791fd22c7b6e61"; # 0.53.3 - last known good for hyprexpo
+    hyprland-plugins = {
+      url = "github:hyprwm/hyprland-plugins?rev=8c1212e96b81aa5f11fe21ca27defa2aad5b3cf3";
+      inputs.hyprland.follows = "hyprland";
+    };
 
     rose-pine-hyprcursor = {
       url = "github:ndom91/rose-pine-hyprcursor";

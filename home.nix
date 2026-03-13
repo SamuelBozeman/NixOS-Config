@@ -17,6 +17,11 @@
 
   programs.home-manager.enable = true;
 
+  programs.java = {
+    enable = true;
+    package = pkgs.jdk21;
+  };
+
   # Terminal & Shell
   programs.fish = {
     enable = true;
@@ -451,10 +456,128 @@
   };
 
   # ----------------------------------------------------------------------------
+  # USER ENVIRONMENT
+  # ----------------------------------------------------------------------------
+
+  home.sessionVariables = {
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    LIBVA_DRIVER_NAME = "nvidia";
+  };
+
+  # ----------------------------------------------------------------------------
   # PACKAGES
   # ----------------------------------------------------------------------------
 
   home.packages = with pkgs; [
-    # Add user-specific packages here if you want to move them from configuration.nix
+    # --- Desktop / Window Manager ---
+    hyprpicker
+    hypridle
+    wl-clipboard
+    cliphist
+    nwg-displays
+    nwg-look
+    grim
+    slurp
+    quickshell
+    libpulseaudio
+
+    # --- Terminal & Shell ---
+    kitty
+    foot
+    fish
+    starship
+    fastfetch
+    btop
+    nvtopPackages.full
+    jq
+    socat
+    yt-dlp
+    cmake
+    ninja
+    pkg-config
+    fzf
+    cowsay
+
+    # --- Development ---
+    git
+    vscodium
+    jetbrains.idea-oss
+    gemini-cli-bin
+    matugen
+    inotify-tools
+    app2unit
+    python3
+    swappy
+
+    # --- Cybersecurity ---
+    ghidra-bin
+    exiftool
+    hashcat
+    cudaPackages.cudatoolkit
+    nmap
+    wireshark
+    burpsuite
+    metasploit
+    john
+    sqlmap
+    thc-hydra
+    aircrack-ng
+    binwalk
+    gobuster
+    rockyou
+
+    # --- Internet & Communication ---
+    firefox
+    vesktop
+    obsidian
+    mullvad-vpn
+    libreoffice-qt
+
+    # --- File Management & Utilities ---
+    thunar
+    nautilus
+    trash-cli
+    xdg-utils
+    wget
+    ntfs3g
+    dosfstools
+    curl
+    imagemagick
+    ffmpeg
+    flac
+    lmstudio
+    libqalculate
+
+    # --- Media & System Utilities ---
+    vlc
+    feishin
+    kdePackages.gwenview
+    spotify
+    bluez
+    bluez-tools
+    brightnessctl
+    ddcutil
+    lm_sensors
+    cava
+    aubio
+    jellyfin-desktop
+    sshfs
+    qbittorrent
+    spotdl
+
+    # --- Gaming ---
+    eden
+    protonplus
+    mangohud
+    lutris
+    heroic
+
+    # --- Theming & Fonts ---
+    adw-gtk3
+    papirus-icon-theme
+    kdePackages.qt6ct
+    libsForQt5.qt5ct
+    inputs.rose-pine-hyprcursor.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 }
