@@ -2,7 +2,7 @@
   description = "NixOS configuration with flakes and caelestia shell";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/9dcb002ca1690658be4a04645215baea8b95f31d"; # pinned: last known good before electron-39 patch breakage (revert to nixos-unstable once fixed)
     caelestia-shell = {
       url = "github:caelestia-dots/shell";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -11,7 +11,6 @@
       url = "github:caelestia-dots/cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    zen-browser.url = "github:0xc000022070/zen-browser-flake";
     hyprland.url = "github:hyprwm/hyprland?rev=386376400119dd46a767c9f8c8791fd22c7b6e61"; # 0.53.3 - last known good for hyprexpo
     hyprland-plugins = {
       url = "github:hyprwm/hyprland-plugins?rev=8c1212e96b81aa5f11fe21ca27defa2aad5b3cf3";
@@ -30,7 +29,7 @@
     nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
   };
 
-  outputs = { self, nixpkgs, caelestia-shell, caelestia-cli, zen-browser, home-manager, nix-cachyos-kernel, ... }@inputs: {
+  outputs = { self, nixpkgs, caelestia-shell, caelestia-cli, home-manager, nix-cachyos-kernel, ... }@inputs: {
     nixosConfigurations = {
       nixos = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
@@ -45,7 +44,7 @@
             home-manager.users.meterra = import ./home.nix;
             home-manager.extraSpecialArgs = { inherit inputs; };
           }
-          (let system = "x86_64-linux"; in { pkgs, ... }: {
+          (let system = "x86_64-linux"; in { pkgs, lib, ... }: {
             environment.systemPackages = [
               ((inputs.caelestia-cli.packages.${system}.with-shell.override {
                 inherit (pkgs) app2unit;
@@ -58,7 +57,6 @@
                   echo "Darkly" > src/caelestia/data/templates/qtct.conf
                 '' + old.patchPhase;
               }))
-              inputs.zen-browser.packages.${system}.default
             ];
           })
         ];
@@ -66,3 +64,4 @@
     };
   };
 }
+
