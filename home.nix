@@ -210,9 +210,9 @@
   xdg.mimeApps = {
     enable = true;
     defaultApplications = {
-      "x-scheme-handler/http" = [ "zen-beta.desktop" ];
-      "x-scheme-handler/https" = [ "zen-beta.desktop" ];
-      "application/pdf" = [ "zen-beta.desktop" ];
+      "x-scheme-handler/http" = [ "brave-browser.desktop" ];
+      "x-scheme-handler/https" = [ "brave-browser.desktop" ];
+      "application/pdf" = [ "brave-browser.desktop" ];
       "application/msword" = [ "writer.desktop" ];
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = [ "writer.desktop" ];
       "application/vnd.openxmlformats-officedocument.wordprocessingml.template" = [ "writer.desktop" ];
@@ -220,8 +220,17 @@
       "application/vnd.ms-word.template.macroEnabled.12" = [ "writer.desktop" ];
       "application/vnd.oasis.opendocument.text" = [ "writer.desktop" ];
       "application/vnd.oasis.opendocument.text-template" = [ "writer.desktop" ];
+      # File manager
+      "inode/directory" = [ "thunar.desktop" ];
+      "x-scheme-handler/file" = [ "thunar.desktop" ];
+      "application/x-gnome-saved-search" = [ "thunar.desktop" ];
     };
   };
+
+  xdg.configFile."brave-flags.conf".text = ''
+    --ozone-platform=wayland
+    --enable-features=TouchpadOverscrollHistoryNavigation
+  '';
 
   xdg.configFile."caelestia/shell.json".text = builtins.toJSON {
     appearance = {
@@ -462,6 +471,7 @@
   home.sessionVariables = {
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    # Override system-level "radeonsi" — Hyprland runs as user and needs the nvidia driver for PRIME
     LIBVA_DRIVER_NAME = "nvidia";
   };
 
@@ -483,12 +493,7 @@
     libpulseaudio
 
     # --- Terminal & Shell ---
-    kitty
     foot
-    fish
-    starship
-    fastfetch
-    btop
     nvtopPackages.full
     jq
     socat
@@ -503,14 +508,22 @@
     git
     vscodium
     jetbrains.idea-oss
-    gemini-cli-bin
+    claude-code
     matugen
     inotify-tools
     app2unit
-    python3
     swappy
 
+    # --- NodeJS ---
+    nodejs
+    
+    # -- Python 3 ---
+    python3
+    python313Packages.pip
+    python313Packages.requests
+
     # --- Cybersecurity ---
+    hash-identifier
     ghidra-bin
     exiftool
     hashcat
@@ -529,10 +542,13 @@
 
     # --- Internet & Communication ---
     firefox
+    brave
     vesktop
     obsidian
-    mullvad-vpn
+    protonvpn-gui
+    wireguard-tools
     libreoffice-qt
+    proton-pass
 
     # --- File Management & Utilities ---
     thunar
@@ -553,7 +569,6 @@
     vlc
     feishin
     kdePackages.gwenview
-    spotify
     bluez
     bluez-tools
     brightnessctl
@@ -564,7 +579,6 @@
     jellyfin-desktop
     sshfs
     qbittorrent
-    spotdl
 
     # --- Gaming ---
     eden

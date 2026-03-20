@@ -1,6 +1,6 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
+# and in the NixOS manual (accessible by running 'nixos-help').
 
 { config, pkgs, inputs, ... }:
 
@@ -32,7 +32,14 @@
   boot.plymouth.enable = true;
   boot.consoleLogLevel = 0;
   boot.initrd.verbose = false;
-  boot.kernelParams = [ "quiet" "splash" "boot.shell_on_fail" "loglevel=3" "rd.systemd.show_status=false" "rd.udev.log_level=3" "udev.log_priority=3" ];
+  boot.kernelParams = [
+    "quiet" "splash" "boot.shell_on_fail"
+    "loglevel=3" "rd.systemd.show_status=false"
+    "rd.udev.log_level=3" "udev.log_priority=3"
+    # Power saving
+    "amd_pstate=active"   # AMD P-State driver for fine-grained CPU freq scaling
+    "pcie_aspm=force"     # Aggressive PCIe Active State Power Management
+  ];
 
   # Kernel
   boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
@@ -71,14 +78,30 @@
   # HARDWARE & DRIVERS
   # ============================================================================
 
+  # Printing
+  services.printing.enable = true;
+
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
+
   # Graphics / NVIDIA
   hardware.graphics.enable = true;
   hardware.graphics.enable32Bit = true;
+  hardware.graphics.extraPackages = with pkgs; [
+    mesa
+    libva-utils
+    libva-vdpau-driver
+    libvdpau-va-gl
+  ];
   services.xserver.videoDrivers = [ "nvidia" "amdgpu" ];
   
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = true;
+    # finegrained is set per-specialisation alongside PRIME offload (required by NixOS)
     powerManagement.finegrained = false;
     open = true;
     nvidiaSettings = true;
@@ -94,12 +117,27 @@
     KERNEL=="card*", KERNELS=="0000:65:00.0", SUBSYSTEM=="drm", SUBSYSTEMS=="pci", SYMLINK+="dri/amd-igpu"
   '';
   services.upower.enable = true;
-  services.power-profiles-daemon.enable = true;
+
+  # auto-cpufreq replaces power-profiles-daemon for smarter per-load CPU scaling
+  services.auto-cpufreq = {
+    enable = true;
+    settings = {
+      battery = {
+        governor = "powersave";
+        turbo = "auto";
+      };
+      charger = {
+        governor = "performance";
+        turbo = "auto";
+      };
+    };
+  };
+
   hardware.i2c.enable = true;
 
   # Bluetooth
   hardware.bluetooth.enable = true;
-  hardware.bluetooth.powerOnBoot = true;
+  hardware.bluetooth.powerOnBoot = false; # Don't waste power if you're not using it at boot
   hardware.bluetooth.settings = {
     General = {
       Experimental = true; # Often helps with modern BLE devices
@@ -115,11 +153,15 @@
   networking.networkmanager.enable = true;
   networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
   services.geoclue2.enable = true;
+  services.geoclue2.appConfig."brave-browser" = {
+    isAllowed = true;
+    isSystem = false;
+  };
   services.zerotierone.enable = true;
-  services.mullvad-vpn.enable = true;
 
   # Trust ZeroTier interfaces so traffic inside the VPN isn't blocked
   networking.firewall.enable = true;
+  networking.firewall.allowedTCPPorts = [ 1234 ];
   networking.firewall.trustedInterfaces = [ "zt*" ];
   networking.firewall.checkReversePath = "loose";
   networking.firewall.allowedUDPPortRanges = [
@@ -142,10 +184,7 @@
   };
 
   # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
+  services.xserver.xkb.layout = "us";
 
   # ============================================================================
   # USER ACCOUNTS & SHELL
@@ -155,7 +194,6 @@
     isNormalUser = true;
     description = "meterra";
     extraGroups = [ "networkmanager" "wheel" "video" "i2c" ];
-    packages = with pkgs; [];
   };
 
   # PAM Configuration for Caelestia Shell
@@ -200,6 +238,8 @@
   environment.sessionVariables = {
     CAELESTIA_WALLPAPERS_DIR = "/home/meterra/Pictures/Wallpapers";
     NIXOS_OZONE_WL = "1";
+    LIBVA_DRIVER_NAME = "radeonsi";
+    VDPAU_DRIVER = "va_gl";
   };
 
   # ============================================================================
@@ -216,10 +256,21 @@
       };
       programs.gamescope.enable = true;
       programs.gamescope.capSysNice = true;
+      programs.steam.gamescopeSession.enable = true;
       services.hypridle.enable = true;
       environment.systemPackages = [
         pkgs.hyprpolkitagent
       ];
+
+      # PRIME offload: dGPU only activates when explicitly requested
+      # finegrained requires offload to be enabled, so both live here together
+      hardware.nvidia.powerManagement.finegrained = pkgs.lib.mkForce true;
+      hardware.nvidia.prime = {
+        offload.enable = true;
+        offload.enableOffloadCmd = true;
+        amdgpuBusId = "PCI:101:0:0"; # 0x65 is 101
+        nvidiaBusId = "PCI:1:0:0";
+      };
     };
 
     KDE.configuration = {
@@ -227,10 +278,14 @@
       services.xserver.enable = true;
       services.desktopManager.plasma6.enable = true;
       services.displayManager.defaultSession = "plasma";
+      # Plasma6 auto-enables power-profiles-daemon; let it manage power instead
+      services.auto-cpufreq.enable = pkgs.lib.mkForce false;
       programs.gamescope.enable = true;
       programs.gamescope.capSysNice = true;
-      
+      programs.steam.gamescopeSession.enable = true;
+
       # PRIME settings for hybrid graphics
+      hardware.nvidia.powerManagement.finegrained = pkgs.lib.mkForce true;
       hardware.nvidia.prime = {
         offload.enable = pkgs.lib.mkForce true;
         offload.enableOffloadCmd = pkgs.lib.mkForce true;
@@ -248,6 +303,7 @@
     enable = true;
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;
+    gamescopeSession.enable = true;
   };
 
   # ============================================================================

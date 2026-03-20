@@ -8,24 +8,24 @@
       inputs.hyprland-plugins.packages.${pkgs.stdenv.hostPlatform.system}.hyprexpo
     ];
     
-    settings = {
-      # MONITORS & WORKSPACES
-      # Managed by nwg-displays, so we source them
-      source = [
-        "~/.config/hypr/monitors.conf"
-        "~/.config/hypr/workspaces.conf"
-        "~/.config/hypr/scheme/current.conf"
-      ];
+    # MONITORS & WORKSPACES
+    # Sourced at runtime so Hyprland resolves them, not Nix at build time
+    extraConfig = ''
+      source = ~/.config/hypr/monitors.conf
+      source = ~/.config/hypr/workspaces.conf
+      source = ~/.config/hypr/scheme/current.conf
+    '';
 
+    settings = {
       # PROGRAMS
       "$terminal" = "kitty";
       "$fileManager" = "thunar";
-      "$browser" = "zen-beta";
+      "$browser" = "brave";
 
       # AUTOSTART
       "exec-once" = [
         "systemctl --user start hyprpolkitagent"
-        "caelestia shell"
+        "sleep 1 && caelestia shell"
         "kdeconnect-indicator"
         "vesktop"
       ];
@@ -78,7 +78,7 @@
       };
 
       animations = {
-        enabled = "yes";
+        enabled = true;
         bezier = [
           "easeOutQuint, 0.23, 1, 0.32, 1"
           "easeInOutCubic, 0.65, 0.05, 0.36, 1"
