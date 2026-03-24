@@ -193,7 +193,7 @@
   users.users.meterra = {
     isNormalUser = true;
     description = "meterra";
-    extraGroups = [ "networkmanager" "wheel" "video" "i2c" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "i2c" "gamemode" ];
   };
 
   # PAM Configuration for Caelestia Shell
@@ -211,6 +211,13 @@
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = true;
+    theme = "catppuccin-mocha";
+    extraPackages = [
+      (pkgs.catppuccin-sddm.override {
+        flavor = "mocha";
+        accent = "mauve";
+      })
+    ];
   };
 
   services.gvfs.enable = true;
@@ -306,6 +313,8 @@
     gamescopeSession.enable = true;
   };
 
+  programs.gamemode.enable = true;
+
   # ============================================================================
   # VIRTUALIZATION
   # ============================================================================
@@ -331,6 +340,9 @@
 
   # kde connect
   programs.kdeconnect.enable = true;
+
+  # Allow user-space FUSE mounts (required for rclone mount)
+  programs.fuse.userAllowOther = true;
   
   # flatpak
   services.flatpak.enable = true;

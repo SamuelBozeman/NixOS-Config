@@ -27,6 +27,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
+    spicetify-nix.url = "github:Gerg-L/spicetify-nix";
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, caelestia-shell, caelestia-cli, home-manager, nix-cachyos-kernel, ... }@inputs: {

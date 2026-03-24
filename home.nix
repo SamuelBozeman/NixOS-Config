@@ -3,6 +3,8 @@
 {
   imports = [
     ./hyprland.nix
+    inputs.spicetify-nix.homeManagerModules.default
+    inputs.nixvim.homeModules.nixvim
   ];
 
   home.username = "meterra";
@@ -17,6 +19,90 @@
 
   programs.home-manager.enable = true;
 
+  programs.nixvim = {
+    enable = true;
+    defaultEditor = true;
+
+    opts = {
+      number = true;
+      relativenumber = true;
+      shiftwidth = 2;
+      tabstop = 2;
+      expandtab = true;
+      smartindent = true;
+      wrap = false;
+      ignorecase = true;
+      smartcase = true;
+      termguicolors = true;
+      scrolloff = 8;
+      signcolumn = "yes";
+      updatetime = 50;
+    };
+
+    globals = {
+      mapleader = " ";
+    };
+
+    colorschemes.rose-pine = {
+      enable = true;
+      settings.variant = "moon";
+    };
+
+    plugins = {
+      lualine.enable = true;
+      web-devicons.enable = true;
+      telescope = {
+        enable = true;
+        keymaps = {
+          "<leader>ff" = "find_files";
+          "<leader>fg" = "live_grep";
+          "<leader>fb" = "buffers";
+        };
+      };
+      treesitter = {
+        enable = true;
+        settings.highlight.enable = true;
+      };
+      nvim-tree = {
+        enable = true;
+        openOnSetup = true;
+      };
+      lsp = {
+        enable = true;
+        servers = {
+          nil_ls.enable = true;     # Nix
+          lua_ls.enable = true;
+          ts_ls.enable = true;   # TypeScript/JavaScript
+          pyright.enable = true;    # Python
+        };
+      };
+      cmp = {
+        enable = true;
+        settings = {
+          sources = [
+            { name = "nvim_lsp"; }
+            { name = "buffer"; }
+            { name = "path"; }
+          ];
+          mapping = {
+            "<C-Space>" = "cmp.mapping.complete()";
+            "<CR>" = "cmp.mapping.confirm({ select = true })";
+            "<Tab>" = "cmp.mapping(cmp.mapping.select_next_item(), {'i', 's'})";
+            "<S-Tab>" = "cmp.mapping(cmp.mapping.select_prev_item(), {'i', 's'})";
+          };
+        };
+      };
+    };
+
+    keymaps = [
+      { mode = "n"; key = "<leader>e"; action = "<cmd>NvimTreeToggle<CR>"; }
+      { mode = "n"; key = "<leader>w"; action = "<cmd>w<CR>"; }
+      { mode = "n"; key = "<leader>q"; action = "<cmd>q<CR>"; }
+      { mode = "v"; key = "<"; action = "<gv"; }
+      { mode = "v"; key = ">"; action = ">gv"; }
+    ];
+  };
+
   programs.java = {
     enable = true;
     package = pkgs.jdk21;
@@ -30,8 +116,8 @@
       cat ~/.local/state/caelestia/sequences.txt 2> /dev/null
     '';
     shellAliases = {
-      rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config";
-      update = "nix flake update --flake ~/nixos-config && sudo nixos-rebuild switch --flake ~/nixos-config";
+      rebuild = "nh os switch ~/nixos-config";
+      update = "nh os switch ~/nixos-config --update";
     };
   };
 
@@ -185,6 +271,19 @@
       ];
     };
   };
+
+  programs.spicetify =
+    let
+      spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+    in
+    {
+      enable = true;
+      enabledExtensions = with spicePkgs.extensions; [
+        
+      ];
+      theme = spicePkgs.themes.catppuccin;
+      colorScheme = "mocha";
+    };
 
   programs.vesktop = {
     enable = true;
@@ -465,10 +564,39 @@
   };
 
   # ----------------------------------------------------------------------------
+  # PROTON DRIVE (rclone mount)
+  # Files stream on-demand from Proton Drive — not stored locally.
+  # One-time setup required: run `rclone config` and name the remote "proton-drive"
+  # ----------------------------------------------------------------------------
+
+  home.activation.createProtonDriveMountpoint = ''
+    mkdir -p "$HOME/ProtonDrive"
+  '';
+
+  systemd.user.services.proton-drive = {
+    Unit = {
+      Description = "Proton Drive rclone mount";
+      After = [ "network-online.target" ];
+      Wants = [ "network-online.target" ];
+    };
+    Service = {
+      Type = "notify";
+      ExecStart = "${pkgs.rclone}/bin/rclone mount proton-drive: %h/ProtonDrive --vfs-cache-mode minimal --dir-cache-time 5m --poll-interval 1m --vfs-read-chunk-size 32M --buffer-size 64M";
+      ExecStop = "${pkgs.fuse3}/bin/fusermount3 -uz %h/ProtonDrive";
+      Restart = "on-failure";
+      RestartSec = "10s";
+    };
+    Install = {
+      WantedBy = [ "default.target" ];
+    };
+  };
+
+  # ----------------------------------------------------------------------------
   # USER ENVIRONMENT
   # ----------------------------------------------------------------------------
 
   home.sessionVariables = {
+    FLAKE = "/home/meterra/nixos-config";
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     # Override system-level "radeonsi" — Hyprland runs as user and needs the nvidia driver for PRIME
@@ -480,6 +608,7 @@
   # ----------------------------------------------------------------------------
 
   home.packages = with pkgs; [
+    nh
     # --- Desktop / Window Manager ---
     hyprpicker
     hypridle
@@ -549,6 +678,8 @@
     wireguard-tools
     libreoffice-qt
     proton-pass
+    rclone
+    fuse3
 
     # --- File Management & Utilities ---
     thunar
@@ -584,6 +715,7 @@
     eden
     protonplus
     mangohud
+    gamemode
     lutris
     heroic
 
