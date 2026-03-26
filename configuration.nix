@@ -2,16 +2,17 @@
 # your system. Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running 'nixos-help').
 
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   # ============================================================================
   # SYSTEM CORE
   # ============================================================================
   
-  imports = [ 
+  imports = [
     ./hardware-configuration.nix
-  ];
+    inputs.dank-material-shell.nixosModules.dank-material-shell
+];
 
   boot.loader.limine = {
     enable = true;
@@ -101,11 +102,16 @@
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = true;
-    # finegrained is set per-specialisation alongside PRIME offload (required by NixOS)
-    powerManagement.finegrained = false;
+    powerManagement.finegrained = true;
     open = true;
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.beta;
+    prime = {
+      offload.enable = true;
+      offload.enableOffloadCmd = true;
+      amdgpuBusId = "PCI:101:0:0"; # 0x65 is 101
+      nvidiaBusId = "PCI:1:0:0";
+    };
   };
 
   # Asus & Power Management
@@ -161,7 +167,7 @@
 
   # Trust ZeroTier interfaces so traffic inside the VPN isn't blocked
   networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ 1234 ];
+  networking.firewall.allowedTCPPorts = [ 1234 12345 ];
   networking.firewall.trustedInterfaces = [ "zt*" ];
   networking.firewall.checkReversePath = "loose";
   networking.firewall.allowedUDPPortRanges = [
@@ -193,7 +199,7 @@
   users.users.meterra = {
     isNormalUser = true;
     description = "meterra";
-    extraGroups = [ "networkmanager" "wheel" "video" "i2c" "gamemode" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "i2c" "gamemode" "libvirtd" ];
   };
 
   # PAM Configuration for Caelestia Shell
@@ -208,29 +214,36 @@
   # DESKTOP ENVIRONMENT
   # ============================================================================
 
-  services.displayManager.sddm = {
-    enable = true;
-    wayland.enable = true;
-    theme = "catppuccin-mocha";
-    extraPackages = [
-      (pkgs.catppuccin-sddm.override {
-        flavor = "mocha";
-        accent = "mauve";
-      })
-    ];
-  };
+  services.displayManager.ly.enable = true;
 
   services.gvfs.enable = true;
   services.udisks2.enable = true;
   services.dbus.enable = true;
   programs.dconf.enable = true;
 
+  programs.hyprland = {
+    enable = true;
+    package = inputs.hyprland.packages.x86_64-linux.hyprland;
+    portalPackage = inputs.hyprland.packages.x86_64-linux.xdg-desktop-portal-hyprland;
+  };
+
+  programs.niri.enable = true;
+  programs.gamescope.enable = true;
+  programs.gamescope.capSysNice = true;
+  services.hypridle.enable = true;
+
   xdg.portal = {
     enable = true;
-    extraPortals = [ 
-      pkgs.xdg-desktop-portal-gtk 
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+      pkgs.xdg-desktop-portal-wlr
     ];
-    config.common.default = "*";
+    config = {
+      common.default = "*";
+      niri = {
+        default = lib.mkForce [ "wlr" "gtk" ];
+      };
+    };
   };
 
   # Sound
@@ -253,33 +266,15 @@
   # SPECIALISATIONS
   # ============================================================================
 
-  specialisation = {
-    Hyprland.configuration = {
-      system.nixos.tags = [ "Hyprland" ];
-      programs.hyprland = {
-        enable = true;
-        package = inputs.hyprland.packages.x86_64-linux.hyprland;
-        portalPackage = inputs.hyprland.packages.x86_64-linux.xdg-desktop-portal-hyprland;
-      };
-      programs.gamescope.enable = true;
-      programs.gamescope.capSysNice = true;
-      programs.steam.gamescopeSession.enable = true;
-      services.hypridle.enable = true;
-      environment.systemPackages = [
-        pkgs.hyprpolkitagent
-      ];
-
-      # PRIME offload: dGPU only activates when explicitly requested
-      # finegrained requires offload to be enabled, so both live here together
-      hardware.nvidia.powerManagement.finegrained = pkgs.lib.mkForce true;
-      hardware.nvidia.prime = {
-        offload.enable = true;
-        offload.enableOffloadCmd = true;
-        amdgpuBusId = "PCI:101:0:0"; # 0x65 is 101
-        nvidiaBusId = "PCI:1:0:0";
-      };
+  home-manager.users.meterra = {
+    imports = [ inputs.dank-material-shell.homeModules.dank-material-shell ];
+    programs.dank-material-shell = {
+      enable = true;
+      systemd.enable = true;
     };
+  };
 
+  specialisation = {
     KDE.configuration = {
       system.nixos.tags = [ "KDE" ];
       services.xserver.enable = true;
@@ -287,18 +282,6 @@
       services.displayManager.defaultSession = "plasma";
       # Plasma6 auto-enables power-profiles-daemon; let it manage power instead
       services.auto-cpufreq.enable = pkgs.lib.mkForce false;
-      programs.gamescope.enable = true;
-      programs.gamescope.capSysNice = true;
-      programs.steam.gamescopeSession.enable = true;
-
-      # PRIME settings for hybrid graphics
-      hardware.nvidia.powerManagement.finegrained = pkgs.lib.mkForce true;
-      hardware.nvidia.prime = {
-        offload.enable = pkgs.lib.mkForce true;
-        offload.enableOffloadCmd = pkgs.lib.mkForce true;
-        amdgpuBusId = "PCI:101:0:0"; # 0x65 is 101
-        nvidiaBusId = "PCI:1:0:0";
-      };
     };
   };
 
@@ -319,10 +302,19 @@
   # VIRTUALIZATION
   # ============================================================================
 
+  virtualisation.waydroid.enable = true;
+
   virtualisation.podman = {
     enable = true;
     dockerCompat = true;
   };
+
+  virtualisation.libvirtd = {
+    enable = true;
+    qemu.runAsRoot = false;
+  };
+
+  programs.virt-manager.enable = true;
 
   # ============================================================================
   # FONTS
@@ -350,6 +342,7 @@
   environment.systemPackages = with pkgs; [
     distrobox
     xdg-desktop-portal-gtk
+    xdg-desktop-portal-gnome
     qt6.qtbase
     qt6.qtdeclarative
     kdePackages.qtwayland
@@ -359,6 +352,8 @@
     upower
     udisks
     pipewire
+    hyprpolkitagent
+    xwayland-satellite
   ];
 
 

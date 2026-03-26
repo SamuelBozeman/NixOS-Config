@@ -2,7 +2,7 @@
   description = "NixOS configuration with flakes and caelestia shell";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/9dcb002ca1690658be4a04645215baea8b95f31d"; # pinned: last known good before electron-39 patch breakage (revert to nixos-unstable once fixed)
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     caelestia-shell = {
       url = "github:caelestia-dots/shell";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -11,9 +11,9 @@
       url = "github:caelestia-dots/cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hyprland.url = "github:hyprwm/hyprland?rev=386376400119dd46a767c9f8c8791fd22c7b6e61"; # 0.53.3 - last known good for hyprexpo
+    hyprland.url = "github:hyprwm/hyprland";
     hyprland-plugins = {
-      url = "github:hyprwm/hyprland-plugins?rev=8c1212e96b81aa5f11fe21ca27defa2aad5b3cf3";
+      url = "github:hyprwm/hyprland-plugins";
       inputs.hyprland.follows = "hyprland";
     };
 
@@ -30,6 +30,10 @@
     spicetify-nix.url = "github:Gerg-L/spicetify-nix";
     nixvim = {
       url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    dank-material-shell = {
+      url = "github:AvengeMedia/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

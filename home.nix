@@ -3,6 +3,7 @@
 {
   imports = [
     ./hyprland.nix
+    ./niri.nix
     inputs.spicetify-nix.homeManagerModules.default
     inputs.nixvim.homeModules.nixvim
   ];
@@ -116,14 +117,22 @@
       cat ~/.local/state/caelestia/sequences.txt 2> /dev/null
     '';
     shellAliases = {
-      rebuild = "nh os switch ~/nixos-config";
-      update = "nh os switch ~/nixos-config --update";
+      clean = "nh clean all";
+    };
+    functions = {
+      rebuild = {
+        description = "Rebuild NixOS";
+        body = "nh os switch ~/nixos-config $argv";
+      };
+      update = {
+        description = "Rebuild NixOS with updated inputs";
+        body = "nh os switch ~/nixos-config --update $argv";
+      };
     };
   };
 
   programs.starship = {
     enable = true;
-    # Using default settings since you mentioned it's not configured yet
   };
 
   programs.zoxide = {
@@ -136,7 +145,6 @@
 
   programs.kitty = {
     enable = true;
-    # Add basic config or keep defaults
     settings = {
       confirm_os_window_close = 0;
       dynamic_background_opacity = true;
@@ -293,6 +301,8 @@
       autoUpdateNotification = true;
       notifyAboutUpdates = true;
 
+      enabledThemes = [ "caelestia.theme.css" ];
+
       plugins = {
         ClearURLs.enabled = true;
         FixYoutubeEmbeds.enabled = true;
@@ -328,240 +338,9 @@
 
   xdg.configFile."brave-flags.conf".text = ''
     --ozone-platform=wayland
+    --use-gl=egl
     --enable-features=TouchpadOverscrollHistoryNavigation
   '';
-
-  xdg.configFile."caelestia/shell.json".text = builtins.toJSON {
-    appearance = {
-      rounding.scale = 0.7511773871119474;
-      spacing.scale = 0.3341695819614299;
-      padding.scale = 0.7304779368532455;
-      font = {
-        family = {
-          sans = "Rubik";
-          mono = "CaskaydiaCove NF";
-          material = "Material Symbols Rounded";
-          clock = "Rubik";
-        };
-        size.scale = 1;
-      };
-      anim = {
-        mediaGifSpeedAdjustment = 300;
-        sessionGifSpeed = 0.7;
-        durations.scale = 1;
-      };
-      transparency = {
-        enabled = true;
-        base = 0.85;
-        layers = 0.4;
-      };
-    };
-    general = {
-      logo = "";
-      apps = {
-        terminal = [ "foot" ];
-        audio = [ "pavucontrol" ];
-        playback = [ "mpv" ];
-        explorer = [ "thunar" ];
-      };
-      idle = {
-        lockBeforeSleep = true;
-        inhibitWhenAudio = true;
-        timeouts = [
-          { idleAction = "lock"; timeout = 180; }
-          { idleAction = "dpms off"; returnAction = "dpms on"; timeout = 300; }
-          { idleAction = [ "systemctl" "suspend-then-hibernate" ]; timeout = 600; }
-        ];
-      };
-      battery = {
-        warnLevels = [
-          { icon = "battery_android_frame_2"; level = 20; message = "You might want to plug in a charger"; title = "Low battery"; }
-          { icon = "battery_android_frame_1"; level = 10; message = "You should probably plug in a charger <b>now</b>"; title = "Did you see the previous message?"; }
-          { critical = true; icon = "battery_android_alert"; level = 5; message = "PLUG THE CHARGER RIGHT NOW!!"; title = "Critical battery level"; }
-        ];
-        criticalLevel = 3;
-      };
-    };
-    background = {
-      enabled = true;
-      wallpaperEnabled = true;
-      desktopClock = {
-        enabled = false;
-        scale = 1;
-        position = "bottom-right";
-        invertColors = false;
-        background = { enabled = false; opacity = 0.7; blur = true; };
-        shadow = { enabled = true; opacity = 0.7; blur = 0.4; };
-      };
-      visualiser = { enabled = false; autoHide = true; blur = false; rounding = 1; spacing = 1; };
-    };
-    bar = {
-      persistent = true;
-      showOnHover = true;
-      dragThreshold = 20;
-      scrollActions = { workspaces = true; volume = true; brightness = true; };
-      popouts = { activeWindow = true; tray = true; statusIcons = true; };
-      workspaces = {
-        shown = 5;
-        activeIndicator = true;
-        occupiedBg = false;
-        showWindows = true;
-        showWindowsOnSpecialWorkspaces = true;
-        activeTrail = false;
-        perMonitorWorkspaces = true;
-        label = "  ";
-        occupiedLabel = "󰮯";
-        activeLabel = "󰮯";
-        capitalisation = "preserve";
-        specialWorkspaceIcons = [];
-      };
-      tray = { background = false; recolour = false; compact = false; iconSubs = []; };
-      status = { showAudio = true; showMicrophone = true; showKbLayout = false; showNetwork = true; showWifi = true; showBluetooth = true; showBattery = true; showLockStatus = true; };
-      clock.showIcon = true;
-      sizes = { innerWidth = 40; windowPreviewSize = 400; trayMenuWidth = 300; batteryWidth = 250; networkWidth = 320; };
-      entries = [
-        { enabled = true; id = "logo"; }
-        { enabled = true; id = "workspaces"; }
-        { enabled = true; id = "spacer"; }
-        { enabled = true; id = "activeWindow"; }
-        { enabled = true; id = "spacer"; }
-        { enabled = true; id = "tray"; }
-        { enabled = true; id = "clock"; }
-        { enabled = true; id = "statusIcons"; }
-        { enabled = true; id = "power"; }
-      ];
-      excludedScreens = [];
-    };
-    border = { thickness = 3; rounding = 4; };
-    dashboard = {
-      enabled = true;
-      showOnHover = true;
-      dragThreshold = 50;
-      performance = { showBattery = true; showGpu = true; showCpu = true; showMemory = true; showStorage = true; showNetwork = true; };
-      sizes = {
-        tabIndicatorHeight = 3;
-        tabIndicatorSpacing = 5;
-        infoWidth = 200;
-        infoIconSize = 25;
-        dateTimeWidth = 110;
-        mediaWidth = 200;
-        mediaProgressSweep = 180;
-        mediaProgressThickness = 8;
-        resourceProgessThickness = 10;
-        weatherWidth = 250;
-        mediaCoverArtSize = 150;
-        mediaVisualiserSize = 80;
-        resourceSize = 200;
-      };
-    };
-    controlCenter.sizes = { heightMult = 0.7; ratio = 1.7777777777777777; };
-    launcher = {
-      enabled = true;
-      showOnHover = false;
-      maxShown = 7;
-      maxWallpapers = 9;
-      specialPrefix = "@";
-      actionPrefix = ">";
-      enableDangerousActions = false;
-      dragThreshold = 50;
-      vimKeybinds = false;
-      favouriteApps = [];
-      hiddenApps = [];
-      useFuzzy = { apps = false; actions = false; schemes = false; variants = false; wallpapers = false; };
-      sizes = { itemWidth = 600; itemHeight = 57; wallpaperWidth = 280; wallpaperHeight = 200; };
-      actions = [
-        { command = [ "autocomplete" "calc" ]; dangerous = false; description = "Do simple math equations (powered by Qalc)"; enabled = true; icon = "calculate"; name = "Calculator"; }
-        { command = [ "autocomplete" "scheme" ]; dangerous = false; description = "Change the current colour scheme"; enabled = true; icon = "palette"; name = "Scheme"; }
-        { command = [ "autocomplete" "wallpaper" ]; dangerous = false; description = "Change the current wallpaper"; enabled = true; icon = "image"; name = "Wallpaper"; }
-        { command = [ "autocomplete" "variant" ]; dangerous = false; description = "Change the current scheme variant"; enabled = true; icon = "colors"; name = "Variant"; }
-        { command = [ "autocomplete" "transparency" ]; dangerous = false; description = "Change shell transparency"; enabled = false; icon = "opacity"; name = "Transparency"; }
-        { command = [ "caelestia" "wallpaper" "-r" ]; dangerous = false; description = "Switch to a random wallpaper"; enabled = true; icon = "casino"; name = "Random"; }
-        { command = [ "setMode" "light" ]; dangerous = false; description = "Change the scheme to light mode"; enabled = true; icon = "light_mode"; name = "Light"; }
-        { command = [ "setMode" "dark" ]; dangerous = false; description = "Change the scheme to dark mode"; enabled = true; icon = "dark_mode"; name = "Dark"; }
-        { command = [ "systemctl" "poweroff" ]; dangerous = true; description = "Shutdown the system"; enabled = true; icon = "power_settings_new"; name = "Shutdown"; }
-        { command = [ "systemctl" "reboot" ]; dangerous = true; description = "Reboot the system"; enabled = true; icon = "cached"; name = "Reboot"; }
-        { command = [ "loginctl" "terminate-user" "" ]; dangerous = true; description = "Log out of the current session"; enabled = true; icon = "exit_to_app"; name = "Logout"; }
-        { command = [ "loginctl" "lock-session" ]; dangerous = false; description = "Lock the current session"; enabled = true; icon = "lock"; name = "Lock"; }
-        { command = [ "systemctl" "suspend-then-hibernate" ]; dangerous = false; description = "Suspend then hibernate"; enabled = true; icon = "bedtime"; name = "Sleep"; }
-        { command = [ "caelestia" "shell" "controlCenter" "open" ]; dangerous = false; description = "Configure the shell"; enabled = true; icon = "settings"; name = "Settings"; }
-      ];
-    };
-    notifs = {
-      expire = true;
-      defaultExpireTimeout = 5000;
-      clearThreshold = 0.3;
-      expandThreshold = 20;
-      actionOnClick = false;
-      groupPreviewNum = 3;
-      sizes = { width = 400; image = 41; badge = 20; };
-    };
-    osd = {
-      enabled = true;
-      hideDelay = 2000;
-      enableBrightness = true;
-      enableMicrophone = false;
-      sizes = { sliderWidth = 30; sliderHeight = 150; };
-    };
-    session = {
-      enabled = true;
-      dragThreshold = 30;
-      vimKeybinds = false;
-      icons = { logout = "logout"; shutdown = "power_settings_new"; hibernate = "downloading"; reboot = "cached"; };
-      commands = {
-        logout = [ "loginctl" "terminate-user" "" ];
-        shutdown = [ "systemctl" "poweroff" ];
-        hibernate = [ "systemctl" "hibernate" ];
-        reboot = [ "systemctl" "reboot" ];
-      };
-      sizes.button = 80;
-    };
-    winfo.sizes = { heightMult = 0.7; detailsWidth = 500; };
-    lock = {
-      recolourLogo = false;
-      enableFprint = true;
-      maxFprintTries = 3;
-      sizes = { heightMult = 0.7; ratio = 1.7777777777777777; centerWidth = 600; };
-    };
-    utilities = {
-      enabled = true;
-      maxToasts = 4;
-      sizes = { width = 430; toastWidth = 430; };
-      toasts = {
-        configLoaded = true;
-        chargingChanged = true;
-        gameModeChanged = true;
-        dndChanged = true;
-        audioOutputChanged = true;
-        audioInputChanged = true;
-        capsLockChanged = true;
-        numLockChanged = true;
-        kbLayoutChanged = true;
-        vpnChanged = true;
-        nowPlaying = false;
-      };
-      vpn = { enabled = false; provider = [ "netbird" ]; };
-    };
-    sidebar = { enabled = true; dragThreshold = 80; sizes.width = 430; };
-    services = {
-      weatherLocation = "";
-      useFahrenheit = true;
-      useFahrenheitPerformance = true;
-      useTwelveHourClock = true;
-      gpuType = "";
-      visualiserBars = 45;
-      audioIncrement = 0.1;
-      brightnessIncrement = 0.1;
-      maxVolume = 1;
-      smartScheme = true;
-      defaultPlayer = "Spotify";
-      playerAliases = [ { from = "com.github.th_ch.youtube_music"; to = "YT Music"; } ];
-    };
-    paths = {
-      wallpaperDir = "/home/meterra/Pictures/Wallpapers";
-      sessionGif = "root:/assets/kurukuru.gif";
-      mediaGif = "root:/assets/bongocat.gif";
-    };
-  };
 
   # ----------------------------------------------------------------------------
   # PROTON DRIVE (rclone mount)
@@ -569,37 +348,37 @@
   # One-time setup required: run `rclone config` and name the remote "proton-drive"
   # ----------------------------------------------------------------------------
 
-  home.activation.createProtonDriveMountpoint = ''
-    mkdir -p "$HOME/ProtonDrive"
-  '';
+  # home.activation.createProtonDriveMountpoint = ''
+  #   mkdir -p "$HOME/ProtonDrive"
+  # '';
 
-  systemd.user.services.proton-drive = {
-    Unit = {
-      Description = "Proton Drive rclone mount";
-      After = [ "network-online.target" ];
-      Wants = [ "network-online.target" ];
-    };
-    Service = {
-      Type = "notify";
-      ExecStart = "${pkgs.rclone}/bin/rclone mount proton-drive: %h/ProtonDrive --vfs-cache-mode minimal --dir-cache-time 5m --poll-interval 1m --vfs-read-chunk-size 32M --buffer-size 64M";
-      ExecStop = "${pkgs.fuse3}/bin/fusermount3 -uz %h/ProtonDrive";
-      Restart = "on-failure";
-      RestartSec = "10s";
-    };
-    Install = {
-      WantedBy = [ "default.target" ];
-    };
-  };
+  # systemd.user.services.proton-drive = {
+  #   Unit = {
+  #     Description = "Proton Drive rclone mount";
+  #     After = [ "network-online.target" ];
+  #     Wants = [ "network-online.target" ];
+  #   };
+  #   Service = {
+  #     Type = "notify";
+  #     ExecStart = "${pkgs.rclone}/bin/rclone mount proton-drive: %h/ProtonDrive --vfs-cache-mode minimal --dir-cache-time 5m --poll-interval 1m --vfs-read-chunk-size 32M --buffer-size 64M";
+  #     ExecStop = "${pkgs.fuse3}/bin/fusermount3 -uz %h/ProtonDrive";
+  #     Restart = "on-failure";
+  #     RestartSec = "10s";
+  #   };
+  #   Install = {
+  #     WantedBy = [ "default.target" ];
+  #   };
+  # };
 
   # ----------------------------------------------------------------------------
   # USER ENVIRONMENT
   # ----------------------------------------------------------------------------
 
   home.sessionVariables = {
-    FLAKE = "/home/meterra/nixos-config";
-    GBM_BACKEND = "nvidia-drm";
-    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    # Override system-level "radeonsi" — Hyprland runs as user and needs the nvidia driver for PRIME
+    NH_FLAKE = "/home/meterra/nixos-config";
+    # In Hybrid/PRIME mode Hyprland composites across both GPUs — setting GBM_BACKEND
+    # and __GLX_VENDOR_LIBRARY_NAME to nvidia globally causes Wayland apps (browsers)
+    # to allocate buffers on NVIDIA while the compositor runs on AMD, causing glitches.
     LIBVA_DRIVER_NAME = "nvidia";
   };
 
@@ -618,7 +397,6 @@
     nwg-look
     grim
     slurp
-    quickshell
     libpulseaudio
 
     # --- Terminal & Shell ---
@@ -637,11 +415,14 @@
     git
     vscodium
     jetbrains.idea-oss
+    jetbrains.clion
+    gemini-cli-bin
     claude-code
     matugen
     inotify-tools
     app2unit
     swappy
+    clang
 
     # --- NodeJS ---
     nodejs
@@ -659,7 +440,6 @@
     cudaPackages.cudatoolkit
     nmap
     wireshark
-    burpsuite
     metasploit
     john
     sqlmap
@@ -693,8 +473,8 @@
     imagemagick
     ffmpeg
     flac
-    lmstudio
     libqalculate
+    taskwarrior3
 
     # --- Media & System Utilities ---
     vlc
@@ -710,6 +490,7 @@
     jellyfin-desktop
     sshfs
     qbittorrent
+    obs-studio
 
     # --- Gaming ---
     eden

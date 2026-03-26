@@ -4,9 +4,7 @@
   wayland.windowManager.hyprland = {
     enable = true;
     package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    plugins = [
-      inputs.hyprland-plugins.packages.${pkgs.stdenv.hostPlatform.system}.hyprexpo
-    ];
+    plugins = [];
     
     # MONITORS & WORKSPACES
     # Sourced at runtime so Hyprland resolves them, not Nix at build time
@@ -35,7 +33,7 @@
         "XCURSOR_SIZE,16"
         "HYPRCURSOR_SIZE,16"
         "HYPRCURSOR_THEME,rose-pine-hyprcursor"
-        # "AQ_DRM_DEVICES,/dev/dri/nvidia-gpu:/dev/dri/amd-igpu"
+        "AQ_DRM_DEVICES,/dev/dri/nvidia-gpu:/dev/dri/amd-igpu"
         # "LIBVA_DRIVER_NAME,nvidia"
         "XDG_SESSION_TYPE,wayland"
         # "GBM_BACKEND,nvidia-drm"
@@ -150,19 +148,9 @@
         force_zero_scaling = true;
       };
 
-      # PLUGIN CONFIG
-      plugin = {
-        hyprexpo = {
-          columns = 3;
-          gap_size = 5;
-          bg_col = "rgba(111111ff)";
-          workspace_method = "center current";
-        };
-      };
-
       # WINDOW RULES
-      windowrulev2 = [
-        "workspace special:vesktop, class:^(vesktop)$"
+      windowrule = [
+        "workspace special:vesktop, match:class vesktop"
       ];
 
       # KEYBINDINGS
@@ -177,8 +165,7 @@
         "$mainMod, F, fullscreen,"
         "$mainMod, R, exec, caelestia shell drawers toggle launcher"
         "$mainMod, P, pseudo,"
-        "$mainMod, J, togglesplit,"
-        "$mainMod, SPACE, hyprexpo:expo, toggle"
+        "$mainMod, J, layoutmsg, togglesplit"
         "$mainMod, V, togglespecialworkspace, vesktop"
         "$mainMod, left, movefocus, l"
         "$mainMod, right, movefocus, r"
@@ -221,8 +208,8 @@
         ",XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
         ",XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
         ",XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
-        ",XF86MonBrightnessUp, exec, brightnessctl -d amdgpu_bl2 -e4 -n2 set 5%+"
-        ",XF86MonBrightnessDown, exec, brightnessctl -d amdgpu_bl2 -e4 -n2 set 5%-"
+        ",XF86MonBrightnessUp, exec, brightnessctl -d amdgpu_bl1 -e4 -n2 set 5%+"
+        ",XF86MonBrightnessDown, exec, brightnessctl -d amdgpu_bl1 -e4 -n2 set 5%-"
       ];
 
       bindl = [
